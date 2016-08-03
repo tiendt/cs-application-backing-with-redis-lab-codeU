@@ -101,7 +101,6 @@ public class JedisIndex {
 		return countInt;
 	}
 
-
 	/**
 	 * Add a page to the index.
 	 *
@@ -111,15 +110,12 @@ public class JedisIndex {
 	public void indexPage(String url, Elements paragraphs) {
   	TermCounter tc = new TermCounter(url);
 		tc.processElements (paragraphs);
-	//	System.out.println("preparing to push...");
+		//	System.out.println("preparing to push...");
 
-		pushTermCounterToRedis(tc);
-	}
 
-	/**
- 	* Pushes the contents of the TermCounter to Redis.
- 	*/
-	public List<Object> pushTermCounterToRedis(TermCounter tc) {
+		/**
+		* Pushes the contents of the TermCounter to Redis.
+		*/
 		Transaction t = jedis.multi();
 
 		String tcKey = termCounterKey (tc.getLabel());
@@ -129,15 +125,16 @@ public class JedisIndex {
 		}
 
 		for (String term: tc.keySet()) {
-		//	System.out.println ("for");
+
 			Integer count = tc.get(term);
 			t.hset(tcKey, term, count.toString());
 			String urlKey = urlSetKey (term);
 			t.sadd(urlKey, tc.getLabel());
 		}
-		List<Object> list = t.exec();
-		return list;
+		t.exec();
+
 	}
+
 
 	/**
 	 * Prints the contents of the index.
